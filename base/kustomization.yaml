@@ -5,6 +5,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - dbmigration.yaml
+  - configmap.yaml
 
 configMapGenerator:
   - name: web-content

@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    environment: prod
+  name: prod
+---
+apiVersion: v1
+data:
+  index.html: |
+    <h1>Hello from PROD</h1>
+kind: ConfigMap
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    environment: prod
+  name: prod-web-content-6c58dtf565
+  namespace: prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: webapp
+    environment: prod
+  name: prod-webapp
+  namespace: prod
+spec:
+  ports:
+  - nodePort: 30081
+    port: 80
+    targetPort: 80
+  selector:
+    app: webapp
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app: webapp
+    environment: prod
+  name: prod-webapp
+  namespace: prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+        environment: prod
+    spec:
+      containers:
+      - image: nginx:1.27
+        name: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: web-content
+      volumes:
+      - configMap:
+          name: prod-web-content-6c58dtf565
+        name: web-content
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    environment: prod
+  name: prod-db-migration
+  namespace: prod
+spec:
+  template:
+    metadata:
+      labels:
+        environment: prod
+    spec:
+      containers:
+      - command:
+        - sh
+        - -c
+        - |
+          echo "Running database migration"
+          sleep 10
+          echo "Migration completed"
+        image: busybox:1.36
+        name: migrate
+      restartPolicy: Never

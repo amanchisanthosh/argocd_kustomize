@@ -26,9 +26,7 @@ configMapGenerator:
     behavior: replace
     files:
       - index.html
-
 patches:
-  - path: resources-patch.yaml
   - target:
       kind: Service
       name: webapp
@@ -38,4 +36,4 @@ patches:
         value: NodePort
       - op: add
         path: /spec/ports/0/nodePort
-        value: 30082
+        value: 30081
