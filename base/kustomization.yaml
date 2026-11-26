@@ -9,3 +9,7 @@ configMapGenerator:
   - name: web-content
     files:
       - index.html
+
+generatorOptions:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
